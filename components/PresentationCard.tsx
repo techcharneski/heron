@@ -22,9 +22,10 @@ export interface Presentation {
   data?: string;
   descricao?: string;
   resumo?: string;
+  detalhes?: string;
   url?: string;
   fonte?: string;
-  conteudo?: PresentationContentBlock[];
+  conteudo?: PresentationContentBlock[] | string;
 }
 
 export default function PresentationCard({ item }: { item: Presentation }) {
