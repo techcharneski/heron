@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   validateFileSize,
   FileValidationError,
-  RECOMMENDED_OPTIMIZATION_TOOLS,
 } from "@/lib/upload-utils";
 import MediaPickerModal from "./MediaPickerModal";
 
@@ -35,7 +34,7 @@ export default function MediaUploadInput({
     setError(null);
     setSizeError(null);
 
-    // Validação prévia de tamanho no cliente (Limite: 4MB)
+    // Validação prévia de tamanho no cliente (4MB para Imagens, 10MB para PDFs)
     const validationErr = validateFileSize(file);
     if (validationErr) {
       setSizeError(validationErr);
@@ -90,7 +89,7 @@ export default function MediaUploadInput({
       if (!res.ok) {
         if (res.status === 413) {
           throw new Error(
-            "O arquivo é muito grande para o servidor. Limite máximo: 4 MB. Por favor, otimize e comprima a imagem antes de fazer o upload."
+            "O arquivo é muito grande para o servidor. Por favor, otimize e comprima o arquivo antes de fazer o upload."
           );
         }
 
@@ -207,7 +206,7 @@ export default function MediaUploadInput({
                 <span>Clique para selecionar novo arquivo ou arraste aqui</span>
               </div>
               <span className="text-[10px] text-gray-500 font-mono">
-                Tamanho máximo: <strong className="text-red-600">4 MB</strong> (Imagens e PDFs)
+                Tamanho máximo: <strong className="text-red-600">4 MB</strong> (Imagens) | <strong className="text-red-600">10 MB</strong> (PDFs)
               </span>
             </>
           )}
@@ -224,7 +223,7 @@ export default function MediaUploadInput({
         </div>
       </div>
 
-      {/* Alerta de erro de tamanho (maior que 4MB) com sugestões de otimização */}
+      {/* Alerta de erro de tamanho com sugestões de otimização de imagem ou PDF */}
       {sizeError && (
         <div className="p-3.5 bg-amber-50 border border-amber-300 text-amber-900 space-y-2 text-xs">
           <div className="flex items-start gap-2 font-bold text-red-700">
@@ -236,10 +235,10 @@ export default function MediaUploadInput({
           </p>
           <div className="pt-2 border-t border-amber-200/80">
             <span className="font-bold text-[10px] uppercase tracking-wider block text-brand-navy mb-1.5">
-              💡 Recomendação: Otimize sua imagem gratuitamente nestes sites:
+              💡 Recomendação: Otimize seu {sizeError.isPdf ? "documento PDF" : "arquivo de imagem"} gratuitamente nestes sites:
             </span>
             <div className="flex flex-wrap gap-1.5">
-              {RECOMMENDED_OPTIMIZATION_TOOLS.map((tool) => (
+              {sizeError.recommendations.map((tool) => (
                 <a
                   key={tool.name}
                   href={tool.url}

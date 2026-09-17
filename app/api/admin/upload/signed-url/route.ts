@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { MAX_FILE_SIZE_BYTES } from "@/lib/upload-utils";
+import { MAX_IMAGE_SIZE_BYTES, MAX_PDF_SIZE_BYTES, isPdf } from "@/lib/upload-utils";
 
 export async function POST(request: Request) {
   try {
@@ -9,11 +9,19 @@ export async function POST(request: Request) {
     const contentType = body.contentType || "application/pdf";
     const fileSize = typeof body.fileSize === "number" ? body.fileSize : undefined;
 
-    if (fileSize && fileSize > MAX_FILE_SIZE_BYTES) {
+    const fileIsPdf = isPdf(originalName, contentType);
+    const maxAllowedBytes = fileIsPdf ? MAX_PDF_SIZE_BYTES : MAX_IMAGE_SIZE_BYTES;
+    const maxMB = fileIsPdf ? 10 : 4;
+
+    if (fileSize && fileSize > maxAllowedBytes) {
       const sizeMB = (fileSize / (1024 * 1024)).toFixed(1);
+      const toolText = fileIsPdf
+        ? "iLovePDF (https://www.ilovepdf.com/pt/comprimir_pdf) ou Smallpdf"
+        : "TinyPNG (https://tinypng.com), iLoveIMG ou Squoosh";
+
       return NextResponse.json(
         {
-          error: `O arquivo excede o limite máximo de 4 MB (Tamanho: ${sizeMB} MB). Por favor, otimize e comprima a imagem em sites como TinyPNG, iLoveIMG ou Squoosh antes de fazer o upload.`,
+          error: `O arquivo excede o limite máximo de ${maxMB} MB (Tamanho atual: ${sizeMB} MB). Por favor, comprima o arquivo em sites como ${toolText} antes de fazer o upload.`,
         },
         { status: 400 }
       );

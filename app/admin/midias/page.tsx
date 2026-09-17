@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import {
   validateFileSize,
   FileValidationError,
-  RECOMMENDED_OPTIMIZATION_TOOLS,
 } from "@/lib/upload-utils";
 
 interface MediaItem {
@@ -48,7 +47,6 @@ function isImage(filename: string, mimetype?: string | null) {
 }
 
 function getDisplayFilename(name: string) {
-  // Se o nome tiver timestamp prefixado (ex: 1712345678900_arquivo.pdf), simplificar para exibição
   if (/^\d{13}_/.test(name)) {
     return name.replace(/^\d{13}_/, "");
   }
@@ -96,7 +94,7 @@ export default function MediaManager() {
     setSizeError(null);
     setUploadedUrl(null);
 
-    // Validação prévia de tamanho no cliente (Limite: 4MB)
+    // Validação prévia de tamanho no cliente (4MB para imagens, 10MB para PDFs)
     const validationErr = validateFileSize(file);
     if (validationErr) {
       setSizeError(validationErr);
@@ -151,7 +149,7 @@ export default function MediaManager() {
       if (!res.ok) {
         if (res.status === 413) {
           throw new Error(
-            "O arquivo é muito grande (máximo 4 MB). Por favor, otimize e comprima o arquivo antes de enviar."
+            "O arquivo é muito grande. Por favor, otimize e comprima o arquivo antes de enviar."
           );
         }
 
@@ -234,7 +232,7 @@ export default function MediaManager() {
             Gerenciador de Mídias e Arquivos
           </h2>
           <p className="text-xs text-gray-500 mt-1">
-            Faça upload de capas de livros, fotos, logos ou documentos em PDF (limite máximo de 4 MB por arquivo).
+            Faça upload de capas de livros, fotos, logos ou documentos em PDF (limites: 4 MB para Imagens, 10 MB para PDFs).
           </p>
         </div>
         <button
@@ -270,12 +268,12 @@ export default function MediaManager() {
               {uploading ? "Enviando arquivo..." : "Clique aqui para selecionar um arquivo"}
             </span>
             <span className="text-xs text-gray-500 font-mono">
-              Tamanho máximo permitido: <strong className="text-red-600">4 MB</strong> (Suporta PNG, JPG, WEBP e PDF)
+              Limites: <strong className="text-red-600">4 MB</strong> (Imagens) | <strong className="text-red-600">10 MB</strong> (PDFs)
             </span>
           </label>
         </div>
 
-        {/* Alerta detalhado de arquivo > 4MB com sites de otimização recomendados */}
+        {/* Alerta detalhado de tamanho com sites de otimização recomendados */}
         {sizeError && (
           <div className="p-4 bg-amber-50 border border-amber-300 text-amber-900 space-y-2.5 text-xs">
             <div className="flex items-start gap-2 font-bold text-red-700 text-sm">
@@ -287,10 +285,10 @@ export default function MediaManager() {
             </p>
             <div className="pt-2 border-t border-amber-200">
               <span className="font-bold text-xs uppercase tracking-wider block text-brand-navy mb-2">
-                💡 Recomendação: Utilize um dos sites gratuitos abaixo para comprimir sua imagem:
+                💡 Recomendação: Utilize um dos sites gratuitos abaixo para comprimir seu {sizeError.isPdf ? "PDF" : "arquivo de imagem"}:
               </span>
               <div className="flex flex-wrap gap-2">
-                {RECOMMENDED_OPTIMIZATION_TOOLS.map((tool) => (
+                {sizeError.recommendations.map((tool) => (
                   <a
                     key={tool.name}
                     href={tool.url}
