@@ -6,6 +6,9 @@ import { getCollection } from "@/lib/content";
 import { Metadata } from "next";
 import { PressItem } from "@/components/PressCard";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface PageProps {
   params: Promise<{
     slug: string;

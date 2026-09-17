@@ -157,7 +157,7 @@ export default function Contato() {
                       <option value="curso">Docência ou Coordenação de Curso</option>
                       <option value="parecer">Solicitação de Parecer Técnico</option>
                       <option value="imprensa">Contato de Imprensa / Entrevista</option>
-                      <option value="outro">Outros Assuntos Acadêmicos</option>
+                      <option value="outro">Outros Assuntos</option>
                     </select>
                   </div>
 

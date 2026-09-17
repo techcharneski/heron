@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ThemesManager() {
+  const router = useRouter();
   const [temas, setTemas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<any | null>(null);
@@ -51,6 +53,7 @@ export default function ThemesManager() {
       setTemas(updated);
       setEditingItem(null);
       setMessage("Tema de pesquisa salvo com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao salvar tema");
     } finally {
@@ -73,6 +76,7 @@ export default function ThemesManager() {
 
       setTemas(updated);
       setMessage("Tema excluído com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao excluir tema");
     }

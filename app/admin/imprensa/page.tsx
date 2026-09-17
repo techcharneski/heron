@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import MediaUploadInput from "@/components/admin/MediaUploadInput";
 import RichContentEditor from "@/components/admin/RichContentEditor";
 
@@ -18,6 +19,7 @@ function slugify(text: string): string {
 }
 
 export default function PressManager() {
+  const router = useRouter();
   const [pressItems, setPressItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<any | null>(null);
@@ -83,6 +85,7 @@ export default function PressManager() {
       setPressItems(updated);
       setEditingItem(null);
       setMessage("Matéria salva com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao salvar matéria");
     } finally {
@@ -105,6 +108,7 @@ export default function PressManager() {
 
       setPressItems(updated);
       setMessage("Matéria excluída com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao excluir matéria");
     }

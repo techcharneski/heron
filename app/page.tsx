@@ -6,6 +6,9 @@ import PresentationCard, { Presentation } from "@/components/PresentationCard";
 import PublicationCard, { Publication } from "@/components/PublicationCard";
 import { getPagesContent, getCollection } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function Home() {
   const pagesData = await getPagesContent();
   const booksData = await getCollection("books");

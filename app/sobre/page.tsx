@@ -2,6 +2,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getPagesContent } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Sobre | Prof. Dr. Heron Charneski",
   description: "Minibio, linhas de pesquisa acadêmica e reconhecimentos factuais de Heron Charneski.",

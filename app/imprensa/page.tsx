@@ -3,6 +3,9 @@ import Footer from "@/components/Footer";
 import PressCard, { PressItem } from "@/components/PressCard";
 import { getCollection } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Imprensa | Prof. Dr. Heron Charneski",
   description: "Reportagens, entrevistas e artigos na imprensa de Heron Charneski.",

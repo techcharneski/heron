@@ -95,6 +95,7 @@ export async function saveCollection<T = any>(
     revalidatePath(p);
     revalidatePath(p, "layout");
   }
+  revalidatePath("/", "layout");
 }
 
 // Helpers para conteúdo de páginas
@@ -109,6 +110,7 @@ export async function savePagesContent(pagesData: any) {
   revalidatePath("/pareceres");
   revalidatePath("/servicos");
   revalidatePath("/contato");
+  revalidatePath("/", "layout");
 }
 
 // Helpers para configurações do site
@@ -120,3 +122,42 @@ export async function saveSiteSettings(settingsData: any) {
   await saveContentByKey("settings", settingsData);
   revalidatePath("/", "layout");
 }
+
+// Helpers para Contatos / Leads do formulário de contato
+export interface LeadItem {
+  id: string;
+  nome: string;
+  email: string;
+  instituicao?: string;
+  assunto: string;
+  mensagem: string;
+  lido: boolean;
+  status: "novo" | "lido" | "respondido" | "arquivado";
+  created_at: string;
+}
+
+export async function getLeadsContent(): Promise<LeadItem[]> {
+  const leads = await getContentByKey<LeadItem[]>("leads", undefined, []);
+  return Array.isArray(leads) ? leads : [];
+}
+
+export async function saveLeadsContent(leads: LeadItem[]): Promise<void> {
+  await saveContentByKey("leads", leads);
+}
+
+export async function addLead(
+  leadData: Omit<LeadItem, "id" | "lido" | "status" | "created_at">
+): Promise<LeadItem> {
+  const currentLeads = await getLeadsContent();
+  const newLead: LeadItem = {
+    id: `lead_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    ...leadData,
+    lido: false,
+    status: "novo",
+    created_at: new Date().toISOString(),
+  };
+  const updated = [newLead, ...currentLeads];
+  await saveLeadsContent(updated);
+  return newLead;
+}
+

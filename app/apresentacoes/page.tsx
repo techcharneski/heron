@@ -3,6 +3,9 @@ import Footer from "@/components/Footer";
 import PresentationCard from "@/components/PresentationCard";
 import { getCollection } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Apresentações, Sustentações Orais e Palestras | Prof. Dr. Heron Charneski",
   description: "Apresentações, sustentações orais e palestras em vídeo de Heron Charneski.",

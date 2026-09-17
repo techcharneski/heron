@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import MediaUploadInput from "@/components/admin/MediaUploadInput";
 
 export default function EditPagesContent() {
+  const router = useRouter();
   const [pagesData, setPagesData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"home" | "sobre" | "pareceres" | "servicos" | "contato">("home");
   const [saving, setSaving] = useState(false);
@@ -35,6 +37,7 @@ export default function EditPagesContent() {
       if (!res.ok) throw new Error(resData.error || "Erro ao salvar");
 
       setMessage({ text: "Textos da página atualizados com sucesso!", type: "success" });
+      router.refresh();
     } catch (err: any) {
       setMessage({ text: err.message || "Erro ao salvar alterações.", type: "error" });
     } finally {

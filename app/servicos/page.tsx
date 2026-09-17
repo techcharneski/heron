@@ -4,6 +4,9 @@ import AreaBlock from "@/components/AreaBlock";
 import Link from "next/link";
 import { getPagesContent } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Serviços e Atuação Profissional | Prof. Dr. Heron Charneski",
   description: "Pareceres Jurídicos, Consultoria Tributária e Societária, Cursos e Palestras com o Prof. Dr. Heron Charneski.",

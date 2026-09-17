@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import MediaUploadInput from "@/components/admin/MediaUploadInput";
 
 export default function BooksManager() {
+  const router = useRouter();
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingBook, setEditingBook] = useState<any | null>(null);
@@ -69,6 +71,7 @@ export default function BooksManager() {
       setBooks(updatedBooks);
       setEditingBook(null);
       setMessage("Livro salvo com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao salvar livro");
     } finally {
@@ -91,6 +94,7 @@ export default function BooksManager() {
 
       setBooks(updatedBooks);
       setMessage("Livro excluído com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao excluir livro");
     }

@@ -6,6 +6,9 @@ import { getCollection } from "@/lib/content";
 import { Presentation } from "@/components/PresentationCard";
 import { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface PageProps {
   params: Promise<{
     slug: string;
@@ -32,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: `${item.titulo} | Prof. Dr. Heron Charneski`,
-    description: item.resumo || item.descricao,
+    description: item.resumo || item.descricao || item.detalhes,
   };
 }
 
@@ -53,6 +56,8 @@ export default async function PresentationDetailPage({ params }: PageProps) {
   };
 
   const embedUrl = getYouTubeEmbedUrl(item.url);
+  const displayVeiculo = item.veiculo || item.plataforma || item.evento || item.tribunal || "Conteúdo em Vídeo & Podcast";
+  const displayDate = item.data || (item.ano ? String(item.ano) : "");
 
   return (
     <div className="flex flex-col min-h-screen bg-brand-bg text-brand-text selection:bg-brand-gold selection:text-brand-navy">
@@ -89,20 +94,22 @@ export default async function PresentationDetailPage({ params }: PageProps) {
           <header className="space-y-6">
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider border text-brand-navy bg-brand-gold-light/40 border-brand-gold/30">
-                {item.plataforma || "Conteúdo em Vídeo & Podcast"}
+                {displayVeiculo}
               </span>
-              <span className="text-xs font-mono font-bold text-brand-gold-dark">
-                {item.ano}
-              </span>
+              {displayDate && (
+                <span className="text-xs font-mono font-bold text-brand-gold-dark">
+                  {displayDate}
+                </span>
+              )}
             </div>
 
             <h1 className="font-serif text-3xl md:text-5xl font-bold text-brand-navy tracking-tight leading-tight">
               {item.titulo}
             </h1>
 
-            {item.resumo && (
+            {(item.resumo || item.descricao || item.detalhes) && (
               <p className="text-base md:text-lg text-brand-text/80 leading-relaxed font-serif italic border-l-2 border-brand-gold pl-4 py-1">
-                {item.resumo}
+                {item.resumo || item.descricao || item.detalhes}
               </p>
             )}
           </header>
@@ -121,9 +128,17 @@ export default async function PresentationDetailPage({ params }: PageProps) {
           )}
 
           {/* Article Text Content */}
-          {item.conteudo && item.conteudo.length > 0 && (
+          {Array.isArray(item.conteudo) && item.conteudo.length > 0 ? (
             <div className="pt-6 border-t border-brand-gold/15 space-y-6">
-              {item.conteudo.map((block, idx) => {
+              {item.conteudo.map((block: any, idx: number) => {
+                if (typeof block === "string") {
+                  return (
+                    <p key={idx} className="text-sm md:text-base text-brand-text/85 leading-relaxed font-serif">
+                      {block}
+                    </p>
+                  );
+                }
+
                 if (block.tipo === "subtitulo") {
                   return (
                     <h2
@@ -148,12 +163,28 @@ export default async function PresentationDetailPage({ params }: PageProps) {
 
                 return (
                   <p key={idx} className="text-sm md:text-base text-brand-text/85 leading-relaxed font-serif">
-                    {block.texto}
+                    {block.texto || block}
                   </p>
                 );
               })}
             </div>
-          )}
+          ) : typeof item.conteudo === "string" && (item.conteudo as string).trim().length > 0 ? (
+            <div className="pt-6 border-t border-brand-gold/15 space-y-6">
+              {(item.conteudo as string).split("\n").filter(Boolean).map((para, idx) => (
+                <p key={idx} className="text-sm md:text-base text-brand-text/85 leading-relaxed font-serif">
+                  {para}
+                </p>
+              ))}
+            </div>
+          ) : (item.descricao || item.detalhes) ? (
+            <div className="pt-6 border-t border-brand-gold/15 space-y-6">
+              {(item.descricao || item.detalhes)?.split("\n").filter(Boolean).map((para, idx) => (
+                <p key={idx} className="text-sm md:text-base text-brand-text/85 leading-relaxed font-serif">
+                  {para}
+                </p>
+              ))}
+            </div>
+          ) : null}
 
           {/* Source Link Section */}
           {item.fonte && (
@@ -163,7 +194,7 @@ export default async function PresentationDetailPage({ params }: PageProps) {
                   Publicação Original
                 </span>
                 <p className="text-xs font-serif text-brand-navy font-semibold mt-0.5">
-                  Portal da Reforma Tributária &bull; Podcast Tax Capital
+                  {displayVeiculo}
                 </p>
               </div>
               <a
@@ -194,3 +225,4 @@ export default async function PresentationDetailPage({ params }: PageProps) {
     </div>
   );
 }
+

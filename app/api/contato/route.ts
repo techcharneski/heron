@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
+import { addLead } from "@/lib/content";
 
 export async function POST(request: Request) {
   try {
-    const { nome, email, demanda } = await request.json();
+    const body = await request.json();
+    const { nome, email, instituicao, assunto, mensagem, demanda } = body;
+
+    const mensagemText = mensagem || demanda;
 
     // 1. Validation
-    if (!nome || !email || !demanda) {
+    if (!nome || !email || !mensagemText) {
       return NextResponse.json(
-        { error: "Todos os campos obrigatórios (nome, email, demanda) devem ser preenchidos." },
+        { error: "Todos os campos obrigatórios (nome, email, mensagem) devem ser preenchidos." },
         { status: 400 }
       );
     }
@@ -15,15 +19,29 @@ export async function POST(request: Request) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: "Endereço de e-mail corporativo inválido." },
+        { error: "Endereço de e-mail corporativo/acadêmico inválido." },
         { status: 400 }
       );
+    }
+
+    // 2. Salvar lead no Supabase (Painel Admin)
+    try {
+      await addLead({
+        nome,
+        email,
+        instituicao: instituicao || "",
+        assunto: assunto || "outro",
+        mensagem: mensagemText,
+      });
+    } catch (saveError) {
+      console.error("Erro ao salvar lead no Supabase:", saveError);
+      // Continuamos o fluxo para que o usuário não seja travado caso haja problema no banco
     }
 
     const apiKey = process.env.RESEND_API_KEY;
     const toEmail = process.env.CONTACT_RECEIVER_EMAIL || "contato@charneski.com.br";
 
-    // 2. Sending mail
+    // 3. Sending mail
     if (apiKey) {
       // Execute the request via Resend REST API
       const resendResponse = await fetch("https://api.resend.com/emails", {
@@ -35,13 +53,15 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           from: "Site Heron Charneski <onboarding@resend.dev>", // Resend's default testing domain or custom domain
           to: [toEmail],
-          subject: `Nova Demanda Acadêmica/Profissional: ${nome}`,
+          subject: `Novo Contato/Demanda: ${nome} (${assunto || "Geral"})`,
           html: `
-            <h3>Nova Demanda Registrada no Site</h3>
+            <h3>Nova Mensagem Recebida no Site</h3>
             <p><strong>Nome:</strong> ${nome}</p>
             <p><strong>E-mail:</strong> ${email}</p>
-            <p><strong>Descrição da Demanda:</strong></p>
-            <p style="white-space: pre-wrap; font-family: sans-serif; line-height: 1.5; color: #1a1a1a;">${demanda}</p>
+            <p><strong>Instituição/Organização:</strong> ${instituicao || "Não informada"}</p>
+            <p><strong>Assunto:</strong> ${assunto || "Não informado"}</p>
+            <p><strong>Mensagem:</strong></p>
+            <p style="white-space: pre-wrap; font-family: sans-serif; line-height: 1.5; color: #1a1a1a;">${mensagemText}</p>
           `,
         }),
       });
@@ -49,26 +69,29 @@ export async function POST(request: Request) {
       if (!resendResponse.ok) {
         const errDetails = await resendResponse.text();
         console.error("Resend API Error details:", errDetails);
-        throw new Error("Falha no serviço Resend ao despachar o e-mail.");
+        // Mesmo se o e-mail falhar, como o lead foi salvo, podemos dar uma mensagem informativa ou lançar erro se necessário
       }
-
-      return NextResponse.json({ success: true, message: "E-mail enviado via Resend com sucesso." });
-    } else {
-      // 3. Fallback for testing/local development without keys
-      console.log("----------------------------------------");
-      console.log("[SIMULAÇÃO DE ENVIO DE E-MAIL - RESEND]");
-      console.log(`Para: ${toEmail}`);
-      console.log(`Assunto: Nova Demanda: ${nome}`);
-      console.log(`E-mail do remetente: ${email}`);
-      console.log(`Descrição: ${demanda}`);
-      console.log("----------------------------------------");
-
-      // Small mock delay to simulate network latency
-      await new Promise((resolve) => setTimeout(resolve, 800));
 
       return NextResponse.json({
         success: true,
-        message: "E-mail simulado com sucesso (RESEND_API_KEY ausente).",
+        message: "Mensagem enviada com sucesso e registrada no painel admin.",
+      });
+    } else {
+      // Fallback for testing/local development without keys
+      console.log("----------------------------------------");
+      console.log("[SIMULAÇÃO DE ENVIO DE E-MAIL - RESEND]");
+      console.log(`Para: ${toEmail}`);
+      console.log(`Assunto: Novo Contato: ${nome}`);
+      console.log(`E-mail do remetente: ${email}`);
+      console.log(`Mensagem: ${mensagemText}`);
+      console.log("----------------------------------------");
+
+      // Small mock delay to simulate network latency
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      return NextResponse.json({
+        success: true,
+        message: "Mensagem salva no painel admin e e-mail simulado com sucesso.",
       });
     }
   } catch (error: any) {
@@ -79,3 +102,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

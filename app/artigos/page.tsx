@@ -3,6 +3,9 @@ import Footer from "@/components/Footer";
 import PublicationCard, { Publication } from "@/components/PublicationCard";
 import { getCollection } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Artigos e Capítulos de Livros | Prof. Dr. Heron Charneski",
   description: "Acervo de artigos científicos, publicações em co-autoria e capítulos de livros do Prof. Dr. Heron Charneski.",

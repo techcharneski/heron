@@ -3,6 +3,9 @@ import Footer from "@/components/Footer";
 import BookCover3D from "@/components/BookCover3D";
 import { getCollection } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Livros Publicados | Prof. Dr. Heron Charneski",
   description: "Obras individuais e coordenações científicas publicadas por Heron Charneski sobre Reforma Tributária, IFRS, Lucro Real e Federalismo Fiscal.",

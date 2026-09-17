@@ -6,6 +6,7 @@ import { useState } from "react";
 
 const NAV_ITEMS = [
   { label: "Visão Geral", href: "/admin", icon: "📊" },
+  { label: "Contatos / Leads", href: "/admin/contatos", icon: "📬" },
   { label: "Textos de Páginas", href: "/admin/paginas", icon: "📄" },
   { label: "Livros", href: "/admin/livros", icon: "📚" },
   { label: "Artigos", href: "/admin/artigos", icon: "📰" },
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { label: "Arquivos e Mídias", href: "/admin/midias", icon: "📁" },
   { label: "Configurações & SEO", href: "/admin/configuracoes", icon: "⚙️" },
 ];
+
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function PresentationsManager() {
+  const router = useRouter();
   const [presentations, setPresentations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<any | null>(null);
@@ -51,6 +53,7 @@ export default function PresentationsManager() {
       setPresentations(updated);
       setEditingItem(null);
       setMessage("Apresentação salva com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao salvar apresentação");
     } finally {
@@ -73,6 +76,7 @@ export default function PresentationsManager() {
 
       setPresentations(updated);
       setMessage("Apresentação excluída com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao excluir apresentação");
     }

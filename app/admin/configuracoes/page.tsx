@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SettingsManager() {
+  const router = useRouter();
   const [settings, setSettings] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
@@ -35,6 +37,7 @@ export default function SettingsManager() {
       if (!res.ok) throw new Error("Erro ao salvar configurações");
 
       setMessage("Configurações gerais atualizadas com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao salvar configurações");
     } finally {

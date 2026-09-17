@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import MediaUploadInput from "@/components/admin/MediaUploadInput";
 
 export default function PublicationsManager() {
+  const router = useRouter();
   const [publications, setPublications] = useState<any[]>([]);
   const [temas, setTemas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,6 +60,7 @@ export default function PublicationsManager() {
       setPublications(updated);
       setEditingItem(null);
       setMessage("Publicação acadêmica salva com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao salvar publicação");
     } finally {
@@ -80,6 +83,7 @@ export default function PublicationsManager() {
 
       setPublications(updated);
       setMessage("Publicação excluída com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao excluir publicação");
     }

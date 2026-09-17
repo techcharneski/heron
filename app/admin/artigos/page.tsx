@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import MediaUploadInput from "@/components/admin/MediaUploadInput";
 
 export default function ArticlesManager() {
+  const router = useRouter();
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingArticle, setEditingArticle] = useState<any | null>(null);
@@ -52,6 +54,7 @@ export default function ArticlesManager() {
       setArticles(updated);
       setEditingArticle(null);
       setMessage("Artigo salvo com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao salvar artigo");
     } finally {
@@ -74,6 +77,7 @@ export default function ArticlesManager() {
 
       setArticles(updated);
       setMessage("Artigo excluído com sucesso!");
+      router.refresh();
     } catch (err: any) {
       setMessage(err.message || "Erro ao excluir artigo");
     }
