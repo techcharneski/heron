@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { MAX_FILE_SIZE_BYTES } from "@/lib/upload-utils";
 
 export async function POST(request: Request) {
   try {
@@ -8,6 +9,17 @@ export async function POST(request: Request) {
 
     if (!file) {
       return NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      return NextResponse.json(
+        {
+          error: `O arquivo excede o limite máximo de 4 MB (Tamanho: ${sizeMB} MB). Por favor, comprima o arquivo em sites como TinyPNG (https://tinypng.com), iLoveIMG ou Squoosh antes de fazer o upload.`,
+          isSizeError: true,
+        },
+        { status: 400 }
+      );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());

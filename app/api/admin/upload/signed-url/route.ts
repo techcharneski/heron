@@ -1,11 +1,23 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { MAX_FILE_SIZE_BYTES } from "@/lib/upload-utils";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
     const originalName = body.filename || "arquivo.pdf";
     const contentType = body.contentType || "application/pdf";
+    const fileSize = typeof body.fileSize === "number" ? body.fileSize : undefined;
+
+    if (fileSize && fileSize > MAX_FILE_SIZE_BYTES) {
+      const sizeMB = (fileSize / (1024 * 1024)).toFixed(1);
+      return NextResponse.json(
+        {
+          error: `O arquivo excede o limite máximo de 4 MB (Tamanho: ${sizeMB} MB). Por favor, otimize e comprima a imagem em sites como TinyPNG, iLoveIMG ou Squoosh antes de fazer o upload.`,
+        },
+        { status: 400 }
+      );
+    }
 
     const sanitizedOriginalName = originalName.replace(/[^a-zA-Z0-9.-]/g, "_");
     const filename = `${Date.now()}_${sanitizedOriginalName}`;
