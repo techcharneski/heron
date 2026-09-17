@@ -15,19 +15,70 @@ export default function MediaManager() {
     setError(null);
     setUploadedUrl(null);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
+      // 1. Obter Signed URL para upload direto no Supabase Storage
+      const signedRes = await fetch("/api/admin/upload/signed-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "application/octet-stream",
+        }),
+      });
+
+      let signedData: any = null;
+      if (signedRes.ok) {
+        signedData = await signedRes.json().catch(() => null);
+      }
+
+      if (signedData?.signedUrl && signedData?.publicUrl) {
+        const uploadRes = await fetch(signedData.signedUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+          body: file,
+        });
+
+        if (uploadRes.ok) {
+          setUploadedUrl(signedData.publicUrl);
+          setUploading(false);
+          return;
+        }
+      }
+
+      // 2. Fallback: rota tradicional
+      const formData = new FormData();
+      formData.append("file", file);
+
       const res = await fetch("/api/admin/upload", {
         method: "POST",
         body: formData,
       });
 
+      if (!res.ok) {
+        if (res.status === 413) {
+          throw new Error(
+            "O arquivo é muito grande (máximo 4.5 MB via upload direto). Por favor, comprima o arquivo ou escolha um menor."
+          );
+        }
+
+        let errorMessage = "Erro no upload";
+        try {
+          const text = await res.text();
+          try {
+            const data = JSON.parse(text);
+            errorMessage = data.error || errorMessage;
+          } catch {
+            errorMessage = text || errorMessage;
+          }
+        } catch {
+          // ignore
+        }
+        throw new Error(errorMessage);
+      }
+
       const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Erro no upload");
-
       setUploadedUrl(data.url);
     } catch (err: any) {
       setError(err.message || "Erro ao realizar upload do arquivo.");

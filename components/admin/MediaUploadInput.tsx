@@ -27,18 +27,71 @@ export default function MediaUploadInput({
     setUploading(true);
     setError(null);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
+      // 1. Obter Signed URL do Supabase Storage para evitar limites de payload (4.5MB) da Vercel
+      const signedRes = await fetch("/api/admin/upload/signed-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "application/octet-stream",
+        }),
+      });
+
+      let signedData: any = null;
+      if (signedRes.ok) {
+        signedData = await signedRes.json().catch(() => null);
+      }
+
+      if (signedData?.signedUrl && signedData?.publicUrl) {
+        // Upload direto do navegador para o Supabase Storage
+        const uploadRes = await fetch(signedData.signedUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+          body: file,
+        });
+
+        if (uploadRes.ok) {
+          onChange(signedData.publicUrl);
+          setUploading(false);
+          return;
+        }
+      }
+
+      // 2. Fallback: upload tradicional via API rota /api/admin/upload
+      const formData = new FormData();
+      formData.append("file", file);
+
       const res = await fetch("/api/admin/upload", {
         method: "POST",
         body: formData,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro no upload");
+      if (!res.ok) {
+        if (res.status === 413) {
+          throw new Error(
+            "O arquivo é muito grande (máximo 4.5 MB via upload direto). Por favor, comprima o arquivo ou escolha um menor."
+          );
+        }
 
+        let errorMessage = "Erro no upload";
+        try {
+          const text = await res.text();
+          try {
+            const data = JSON.parse(text);
+            errorMessage = data.error || errorMessage;
+          } catch {
+            errorMessage = text || errorMessage;
+          }
+        } catch {
+          // ignore
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await res.json();
       onChange(data.url);
     } catch (err: any) {
       setError(err.message || "Erro ao realizar upload do arquivo.");
